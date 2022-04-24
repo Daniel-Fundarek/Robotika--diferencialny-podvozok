@@ -68,8 +68,7 @@ namespace WpfApp1
             angle = calculateAngle(rotVel, angle, timeDev);
             calculatePosition(position,prevPosition, linVel, angle, timeDev);
             drawLine(MyCanvas,prevPosition, position);
-            position.getX();
-            position.getY();
+           
 
 
         }
@@ -90,7 +89,7 @@ namespace WpfApp1
             currTime += timeDev;
         }
        
-        private double calculateLinVel(double leftWheelVel, double RightWheelVel)
+      /*  private double calculateLinVel(double leftWheelVel, double RightWheelVel)
         {   
 
             return (leftWheelVel + RightWheelVel) / 2;
@@ -141,7 +140,7 @@ namespace WpfApp1
                 
 
             }
-        }
+        }*/
        
 
 

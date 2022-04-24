@@ -8,6 +8,37 @@ namespace WpfApp1
 {
     internal class Controller
     {
+        private double L = 0.2;  // m  rozchod kolies
+        private double d = 0.1;  // m  vzdialenost medzi taziskom a kolesom
+        private double r = 0.05; // m  polomer kolesa
+        // zadane premenne
+        private double[] velLeftWheelArray = new double[] { 2, -1, 1, 1, 1 };
+        private double[] velRightWheelArray = new double[] { 2, 1, 0, 2, 1 };
+        private double velRightWheel = 0;
+        private double velLeftWheel = 0;
+        private double[] timeStamps = new double[] { 0, 5, 10, 15, 20 };
+        private int timeIndex = 0;
+        private double timeDev = 0.01; //s
+
+        private double time = 0; //s
+
+
+        // premenne ktore pocitam
+        private double rotVel; // rad/s
+        private double linVel; // m/s
+        private double angle;  // rad
+        private double currTime; //s
+        public Position prevPosition = new Position(100, 10);
+        public Position position = new Position(100, 10);
+
+        public void runLogic()
+        {
+            changeVelOfWheel();
+            linVel = calculateLinVel(velLeftWheel, velRightWheel);
+            rotVel = calculateRotVel(velLeftWheel, velRightWheel, L);
+            angle = calculateAngle(rotVel, angle, timeDev);
+            calculatePosition(position, prevPosition, linVel, angle, timeDev);
+        }
         private double calculateLinVel(double leftWheelVel, double RightWheelVel)
         {
 
