@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
-
+using System.Printing;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace WpfApp1
@@ -11,47 +14,53 @@ namespace WpfApp1
     
     internal class Controller
     {
-        private const int OFFSETX = 200; // pozicia na canvase na zaciatku
-        private const int OFFSETY = 200; // pozicia na canvase na zaciatku
+        private const int OFFSETX = 1000;//200; // pozicia na canvase na zaciatku
+        private const int OFFSETY = 500;//200; // pozicia na canvase na zaciatku
 
-        private const int SCALE = 100;
-        private double L = 0.2;  // m  rozchod kolies
-        private const double D = 0.1;  // m  vzdialenost medzi taziskom a kolesom
-        private double r = 0.05; // m  polomer kolesa
-        // zadane premenne
-        private double[] velLeftWheelArray = new double[] { 1.25, 1, 1, 2, 1, 1, 0};
-        private double[] velRightWheelArray = new double[] { 1, 1, 0, 1, 1, 2, 0};
-        private double[] timeStamps = new double[] { 0, 5, 6, 15, 24, 25, 30 };
-        /// <summary>
-        /// /////////
-        /// </summary>
-        private double velRightWheel = 0;
-        private double velLeftWheel = 0;
+        private const int SCALE = 100;   // mierka
+        private double L = 0.2;          // m  rozchod kolies
+        private const double D = 0.1;    // m  vzdialenost medzi taziskom a kolesom
+        private double r = 0.05;         // m  polomer kolesa
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////// zadane premenne ///////
+        private double[] velLeftWheelArray = new double[] { 1.25, 1, 1, -1, 1, 1, 0}; // vektor rychlosti laveho kolesa                    ///  
+        private double[] velRightWheelArray = new double[] { 1, -1, 1, 1, 1, 0,5, 0};   // vektor rychlosti praveho kolesa                   ///
+        private double[] timeStamps = new double[] { 0, 5, 6, 7, 9, 10, 11 };      // vektor casov                                        ///
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        private int timeIndex = 0;
-        public double timeDev = 0.001; //s
+        private double velRightWheel = 0; // rychlost praveho kolesa
+        private double velLeftWheel = 0;  // rychlost laveho kolesa
+        private int timeIndex = 0;      
+        public double timeDev = 0.01;     //  rychlost simulacie/frekvencia casovaca v sekundach     
+        private int leftRightArrow;       // Keyboard sipky LEFT = -1 || RIGHT = 1
+        private int upDownArrow;          // Keyboard sipky DOWN = -1 || UP = 1
+        private double rotVel;            // rad/s
+        private double linVel;            // m/s
+        private double angle;             // rad
+        private double currTime;          //s
+        public Position prevPosition = new Position(OFFSETX, OFFSETY);                  // predchadzajuca pozicia Taziska
+        public Position position = new Position(OFFSETX, OFFSETY);                      // pozicia Taziska
+        public Position prevLeftWheel =new Position();                                      // predchadzajuca pozicia laveho kolesa
+        public Position prevRightWheel = new Position();                                    // predchadzajuca pozicia praveho kolesa
+        public Position leftWheel= new Position(OFFSETX - SCALE*D, OFFSETY);            //  pozicia laveho kolesa
+        public Position rightWheel= new Position(OFFSETX + SCALE * D, OFFSETY);         //  pozicia praveho kolesa
 
-        
-
-         
-        // premenne ktore pocitam
-        private double rotVel; // rad/s
-        private double linVel; // m/s
-        private double angle;  // rad
-        private double currTime; //s
-        public Position prevPosition = new Position(OFFSETX, OFFSETY);
-        public Position position = new Position(OFFSETX, OFFSETY);
-
-        public Position prevLeftWheel =new Position();
-        public Position prevRightWheel = new Position();
-        public Position leftWheel= new Position(OFFSETX - SCALE*D, OFFSETY);
-        public Position rightWheel= new Position(OFFSETX + SCALE * D, OFFSETY);
-
-        private hTransform transform;
 
         public Controller()
         {
-            this.transform = new hTransform();
+
+        }
+
+
+        public void runGame()
+        {
+            
+            KeyListener();
+            Debug.WriteLine(leftRightArrow); 
+            changeRotVel();
+            angle = calculateAngle(rotVel, angle, timeDev);
+            calculatePosition(position, prevPosition, linVel, angle, timeDev);
+            calculateWheelPosition(position, rightWheel, prevRightWheel, D, angle + Math.PI / 2);
+            calculateWheelPosition(position, leftWheel, prevLeftWheel, D, angle - Math.PI / 2);
         }
 
         public void runLogic()
@@ -105,14 +114,6 @@ namespace WpfApp1
             double linDeviation = _linVel * timeDeviation * SCALE;
             _position.setX(_position.getX() +  linDeviation * Math.Sin(angleR)); // *3
             _position.setY(_position.getY() +  linDeviation * Math.Cos(angleR)); // *3
-         /*   prevLeftWheel.setX(leftWheel.getX());
-            prevRightWheel.setX(rightWheel.getX());
-            prevLeftWheel.setY(leftWheel.getX());
-            prevRightWheel.setY(rightWheel.getY());
-            leftWheel = transform.rotateMatrix(angle - Math.PI/2, d * 100, position);
-            rightWheel = transform.rotateMatrix(angle + Math.PI/2, d * 100, position);*/
-
-
         }
 
         private void calculateWheelPosition(Position reference,Position _position, Position _prevPosition, double linDeviation, double angleR)
@@ -196,7 +197,93 @@ namespace WpfApp1
             timeStamps[3] = timeStamps[2] + (-Math.PI / 2) / calculateRotVel(vl, vr, L)*speedLimit;
 
 
+        }
+
+        private void KeyListener()
+        {
+         
+            if ((Keyboard.GetKeyStates(Key.Left) & KeyStates.Down) > 0)
+            {
+                leftRightArrow = -1;
+            }
+            if ((Keyboard.GetKeyStates(Key.Right) & KeyStates.Down)>0)
+            {
+                leftRightArrow = 1;
+            }
+            if (((Keyboard.GetKeyStates(Key.Right) & KeyStates.Down) == 0) && ((Keyboard.GetKeyStates(Key.Left) & KeyStates.Down) == 0) )
+            {
+                leftRightArrow = 0;
+            }
+
+            if ((Keyboard.GetKeyStates(Key.Down) & KeyStates.Down) > 0)
+            {
+                upDownArrow = -1;
+            }
+            if ((Keyboard.GetKeyStates(Key.Up) & KeyStates.Down) > 0)
+            {
+                upDownArrow = 1;
+            }
+            if (((Keyboard.GetKeyStates(Key.Up) & KeyStates.Down) == 0) && ((Keyboard.GetKeyStates(Key.Down) & KeyStates.Down) == 0))
+            {
+                upDownArrow = 0;
+            }
+        }
+        public void changeRotVel()
+        {
+          
+                // rot velocity
+                //arrow 1 = right
+                //arrow -1 = left
+                // arrow 0 = no change
+               
+                if (upDownArrow == 1 && linVel < 4)
+                {
+                    linVel += 0.05;
+                }
+
+                if (upDownArrow == -1 && linVel > -4)
+                {
+                    linVel -= 0.05;
+                }
+
+                if (upDownArrow == 0 && linVel > 0)
+                {
+                    linVel -= 0.05;
+                }
+                else if (upDownArrow == 0 && linVel < 0)
+                {
+                    linVel += 0.05;
+                }
+                //////////////
+                /// lin velocity
+                if (leftRightArrow == 1 && rotVel < 20)
+                {
+                    rotVel += 0.2;
+                }
+
+                if (leftRightArrow == -1 && rotVel > -20)
+                {
+                    rotVel -= 0.2;
+                }
+
+                if (leftRightArrow == 0 && rotVel > 0)
+                {
+                    rotVel -= 0.2;
+                }
+                else if (leftRightArrow == 0 && rotVel < 0)
+                {
+                    rotVel += 0.2;
+                }
+
+                
+            
+
 
         }
+
+
+
+
+
     }
 }

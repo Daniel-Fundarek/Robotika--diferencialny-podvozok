@@ -21,32 +21,11 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-       // int x,y;
-        /// <summary>
-        /// ///
-        /// </summary>
-      /*  private double L = 0.2;  // m  rozchod kolies
-        private double d = 0.1;  // m  vzdialenost medzi taziskom a kolesom
-        private double r = 0.05; // m  polomer kolesa
-        // zadane premenne
-        private double[] velLeftWheelArray = new double[] { 2, -1, 1, 1, 1 };
-        private double[] velRightWheelArray = new double[] { 2, 1, 0, 2, 1 };
-        private double velRightWheel = 0;
-        private double velLeftWheel = 0;
-        private double[] timeStamps = new double[] { 0, 5, 10, 15, 20 };
-        private int timeIndex = 0;
-        private double timeDev = 0.01; //s
-
-        private double time = 0; //s
-
-       
-        // premenne ktore pocitam
-        private double rotVel; // rad/s
-        private double linVel; // m/s
-        private double angle;  // rad
-        private double currTime; //s
-        public Position prevPosition = new Position(100,10);
-        public Position position = new Position(100,10);*/
+        private int mode = 3; // nastavenie modu 0 - zakladny rezim pohyb pomocou dopredu naprogramovanych vektorov rychlosti kolies a casovych vektorov
+                              //                 1 - kreslenie stvorca pri kresleni stvorca aby sme vykreslili pravouhly stvorec musime zmensit frekvenciu casovaca
+                              //                     alebo zmensit mierku pretoze dochadz k zaokruhlovaniu
+                              //                 2 - kreslenie S line
+                              //                 3 - hra
         private Canvas myCanvas;
         private Controller controller;
         /// 
@@ -54,8 +33,20 @@ namespace WpfApp1
         {
             InitializeComponent();
             this.controller = new Controller();
-
-             controller.drawRect(1);
+            switch (mode)
+            {
+                case 0:
+                    break;
+                case 1:
+                    controller.drawRect(1); // rozmer strany stvorca
+                    break;
+                case 2:
+                    controller.drawSLine(3,2,1);  // nastavenie polomerov S krivky
+                    break;
+                default:
+                    break;
+            }
+            // controller.drawRect(1);
             //controller.drawSLine(2,3,1);
             DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(controller.timeDev); // TimeSpan.FromMilliseconds(100);
@@ -67,7 +58,14 @@ namespace WpfApp1
 
         public void timerFcn(object sender, EventArgs e)
         {
-            controller.runLogic();
+            if (mode == 3)
+            {
+                controller.runGame();
+            }
+            else
+            {
+                controller.runLogic();
+            }
             drawLine(MyCanvas,controller.prevPosition, controller.position,0);
             drawLine(MyCanvas, controller.prevLeftWheel, controller.leftWheel, 1);
             drawLine(MyCanvas, controller.prevRightWheel, controller.rightWheel, 2);
@@ -103,7 +101,8 @@ namespace WpfApp1
             
            
             MyCanvas.Children.Add(line);
-            
+            // MyCanvas.Children.RemoveAt(MyCanvas.Children.Count);    // na zmazanie robota
+
         }
        
 
