@@ -16,8 +16,9 @@ namespace WpfApp1
 
         public Position(double x, double y)
         {
-            this.x = x;
-            this.y = y;
+            
+            setX(x);
+            setY(y);
         }
 
         public Position()

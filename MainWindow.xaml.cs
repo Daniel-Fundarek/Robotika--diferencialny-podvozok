@@ -21,11 +21,11 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        int x,y;
+       // int x,y;
         /// <summary>
         /// ///
         /// </summary>
-        private double L = 0.2;  // m  rozchod kolies
+      /*  private double L = 0.2;  // m  rozchod kolies
         private double d = 0.1;  // m  vzdialenost medzi taziskom a kolesom
         private double r = 0.05; // m  polomer kolesa
         // zadane premenne
@@ -46,14 +46,19 @@ namespace WpfApp1
         private double angle;  // rad
         private double currTime; //s
         public Position prevPosition = new Position(100,10);
-        public Position position = new Position(100,10);
+        public Position position = new Position(100,10);*/
         private Canvas myCanvas;
+        private Controller controller;
         /// 
         public MainWindow()
         {
             InitializeComponent();
+            this.controller = new Controller();
+
+             controller.drawRect(1);
+            //controller.drawSLine(2,3,1);
             DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(timeDev); // TimeSpan.FromMilliseconds(100);
+            timer.Interval = TimeSpan.FromSeconds(controller.timeDev); // TimeSpan.FromMilliseconds(100);
             timer.Tick += timerFcn;
             timer.Start();
 
@@ -62,88 +67,45 @@ namespace WpfApp1
 
         public void timerFcn(object sender, EventArgs e)
         {
-            changeVelOfWheel();
-            linVel = calculateLinVel(velLeftWheel, velRightWheel);
-            rotVel = calculateRotVel(velLeftWheel, velRightWheel, L);
-            angle = calculateAngle(rotVel, angle, timeDev);
-            calculatePosition(position,prevPosition, linVel, angle, timeDev);
-            drawLine(MyCanvas,prevPosition, position);
-           
+            controller.runLogic();
+            drawLine(MyCanvas,controller.prevPosition, controller.position,0);
+            drawLine(MyCanvas, controller.prevLeftWheel, controller.leftWheel, 1);
+            drawLine(MyCanvas, controller.prevRightWheel, controller.rightWheel, 2);
+
 
 
         }
-        public void drawLine(Canvas MyCanvas, Position lastPosition, Position currPosition)
+        public void drawLine(Canvas MyCanvas, Position lastPosition, Position currPosition,int color)
         {
             // MyCanvas.ActualHeight;
             //   MyCanvas.ActualWidth;
             
             Line line = new Line();
             line.X1 = lastPosition.IntX;
-            line.Y1 = MyCanvas.ActualHeight - lastPosition.IntY *2;
+            line.Y1 = MyCanvas.ActualHeight - lastPosition.IntY;
             line.X2 = currPosition.IntX ;
-            line.Y2 = MyCanvas.ActualHeight - currPosition.IntY *2;
-            line.Fill = Brushes.Red;
-            line.Stroke = Brushes.Black;
-            line.Width = 2;
-            MyCanvas.Children.Add(line);
-            currTime += timeDev;
-        }
-       
-      /*  private double calculateLinVel(double leftWheelVel, double RightWheelVel)
-        {   
-
-            return (leftWheelVel + RightWheelVel) / 2;
-
-        }
-
-        private double calculateRotVel(double leftWheelVel, double rightWheelVel, double wheelBase)
-        {
-            return (rightWheelVel - leftWheelVel) / wheelBase;
-        }
-
-        private double calculateAngle(double rotVelocity, double previousAngle, double timeDeviation)
-        {
-            double angle = previousAngle + rotVelocity * timeDeviation;
-            if (angle > 2* Math.PI)
+            line.Y2 = MyCanvas.ActualHeight - currPosition.IntY ;
+            if (color == 0)
             {
-                angle -= 2* Math.PI;
+                line.Fill = Brushes.Red;
+                line.Stroke = Brushes.Red;
             }
-            else if (angle < 0)
+            else if (color == 1)
             {
-                angle += 2 * Math.PI;
+                line.Fill = Brushes.Green;
+                line.Stroke = Brushes.Green;
             }
-
-            return angle;
-        }
-
-        private void calculatePosition(Position _position,Position _prevPosition, double _linVel, double angleR, double timeDeviation)
-        {
-            _prevPosition.setX(_position.getX());
-            _prevPosition.setY(_position.getY());
-            double linDeviation = _linVel * timeDeviation;
-            _position.setX(_position.getX() + 3 * linDeviation * Math.Sin(angleR)); // *3
-            _position.setY(_position.getY() + 3 * linDeviation * Math.Cos(angleR)); // *3
+            else
+            {
+                line.Fill = Brushes.Blue;
+                line.Stroke = Brushes.Blue;
+            }
             
-
+           
+            MyCanvas.Children.Add(line);
+            
         }
-
-        private void changeVelOfWheel()
-        {
-            if (timeStamps[timeIndex] <= currTime)
-            {
-                velLeftWheel = velLeftWheelArray[timeIndex];
-                velRightWheel = velRightWheelArray[timeIndex];
-                if (timeIndex != timeStamps.Length-1)
-                {
-                    timeIndex++;
-                }
-                
-
-            }
-        }*/
        
-
-
 
 
     }
