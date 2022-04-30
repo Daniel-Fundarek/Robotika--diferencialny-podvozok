@@ -38,24 +38,24 @@ namespace WpfApp1
                 case 0:
                     break;
                 case 1:
-                    controller.drawRect(1); // rozmer strany stvorca
+                    controller.drawRect(2); // rozmer strany stvorca
                     break;
                 case 2:
-                    controller.drawSLine(3,2,1);  // nastavenie polomerov S krivky
+                    controller.drawSLine(1,2,2);  // nastavenie polomerov S krivky
                     break;
                 default:
                     break;
             }
-            // controller.drawRect(1);
-            //controller.drawSLine(2,3,1);
             DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(controller.timeDev); // TimeSpan.FromMilliseconds(100);
+            timer.Interval = TimeSpan.FromSeconds(controller.timeDev); 
             timer.Tick += timerFcn;
             timer.Start();
 
             
         }
 
+        // timer function - called by the timer every x millisecs
+        // timer funkcia - je volana casovacom ktora sa periodicky opakuje kazdych x millisekund
         public void timerFcn(object sender, EventArgs e)
         {
             if (mode == 3)
@@ -73,11 +73,11 @@ namespace WpfApp1
 
 
         }
+        // draw function - used for drawing lines representing trajectory of the center of mass and the wheels
+        // drawLine - sluzi na vykreslovanie ciar reprezentujuce trajektorie taziska a kolies robota
         public void drawLine(Canvas MyCanvas, Position lastPosition, Position currPosition,int color)
         {
-            // MyCanvas.ActualHeight;
-            //   MyCanvas.ActualWidth;
-            
+
             Line line = new Line();
             line.X1 = lastPosition.IntX;
             line.Y1 = MyCanvas.ActualHeight - lastPosition.IntY;
@@ -98,8 +98,7 @@ namespace WpfApp1
                 line.Fill = Brushes.Blue;
                 line.Stroke = Brushes.Blue;
             }
-            
-           
+
             MyCanvas.Children.Add(line);
             // MyCanvas.Children.RemoveAt(MyCanvas.Children.Count);    // na zmazanie robota
 

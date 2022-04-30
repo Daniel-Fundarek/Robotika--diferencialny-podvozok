@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace WpfApp1
 {
+    // Position class consists of the position x,y and their INT equivalent
     public class Position
     {
         private double x;
